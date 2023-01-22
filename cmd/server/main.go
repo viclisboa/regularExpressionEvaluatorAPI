@@ -18,7 +18,7 @@ func main() {
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.InfoLevel)
 
-	repo, err := repository.NewRepository("postgres", `pg:pass@localhost:5432`)
+	repo, err := repository.NewRepository("postgres", `host=localhost user=pg password=pass dbname=postgres port=5432 sslmode=disable`)
 	if err != nil {
 		panic("error initializing database")
 	}
@@ -49,6 +49,8 @@ func main() {
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
+
+	log.Info("starting server")
 
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal("listen and serve died", "err", err)

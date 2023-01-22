@@ -24,6 +24,7 @@ type Repository struct {
 func NewRepository(database, connectionString string) (Repository, error) {
 	db, err := _gorm.Open(database, connectionString)
 	if err != nil {
+		fmt.Println(err)
 		panic(err)
 	}
 
@@ -62,7 +63,7 @@ func (r *Repository) CreateExpression(definition string) error {
 		Definition: definition,
 	}
 
-	createResponse := r.db.Create(expression)
+	createResponse := r.db.Create(&expression)
 
 	if createResponse.Error != nil {
 		fmt.Println(fmt.Sprintf("error while trying to create user, err: %s", createResponse.Error.Error()))
