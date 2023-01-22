@@ -100,7 +100,9 @@ func TestExpression_ExecuteExpression(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			service := ExpressionService{expressionRepository: &tc.databaseMock}
+			service := ExpressionService{
+				ExpressionRepository: &tc.databaseMock,
+			}
 
 			result, err := service.ExecuteExpression(tc.expressionId, tc.urlParams)
 			assert.Equal(t, tc.expectedResult, result, "values should be the same")

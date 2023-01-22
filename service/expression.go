@@ -2,8 +2,8 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"github.com/Knetic/govaluate"
+	log "github.com/sirupsen/logrus"
 	"github.com/viclisboa/regularExpressionEvaluatorAPI/model"
 	"github.com/viclisboa/regularExpressionEvaluatorAPI/repository"
 	"github.com/viclisboa/regularExpressionEvaluatorAPI/util"
@@ -13,24 +13,29 @@ import (
 )
 
 type ExpressionService struct {
-	expressionRepository repository.ExpressionInterface
+	ExpressionRepository repository.ExpressionInterface
+	Logger               log.Logger
 }
 
 func NewExpressionService(repo repository.Repository, balance int) ExpressionService {
 	return ExpressionService{
-		expressionRepository: &repo,
+		ExpressionRepository: &repo,
 	}
 }
 
 func (es *ExpressionService) ExecuteExpression(expressionId string, urlParams string) (model.Response, error) {
+	logger := es.Logger.WithField("expressionId", expressionId)
 
 	expressionIdAsInt, err := strconv.Atoi(expressionId)
 	if err != nil {
+		logger.Error("error parsing expressionId to int")
 		return model.Response{}, errors.New(util.ErrParsingExpressionId)
 	}
 
-	expression, err := es.expressionRepository.GetExpressionById(expressionIdAsInt)
+	expression, err := es.ExpressionRepository.GetExpressionById(expressionIdAsInt)
 	if err != nil {
+		logger.WithField("err", err.Error())
+		logger.Error("error recovering expression from database")
 		return model.Response{}, errors.New(util.ErrRecoveringExpressionFromDatabase)
 	}
 
@@ -41,8 +46,15 @@ func (es *ExpressionService) ExecuteExpression(expressionId string, urlParams st
 	expressionString = searchRegexOr.ReplaceAllString(expressionString, "||")
 	expressionString = searchRegexAnd.ReplaceAllString(expressionString, "&&")
 
+	logger.WithFields(log.Fields{
+		"expression": expression.Definition,
+		"params":     urlParams,
+	})
+
 	evaluateExpression, err := govaluate.NewEvaluableExpression(expressionString)
 	if err != nil {
+		logger.WithField("err", err.Error())
+		logger.Error("error creating evaluable expression")
 		return model.Response{}, errors.New(util.ErrCreatingEvaluableExpression)
 	}
 
@@ -61,6 +73,8 @@ func (es *ExpressionService) ExecuteExpression(expressionId string, urlParams st
 
 	result, err := evaluateExpression.Evaluate(parameters)
 	if err != nil {
+		logger.WithField("err", err.Error())
+		logger.Error("error evaluating expression")
 		return model.Response{}, errors.New(util.ErrEvaluatingExpression)
 	}
 
@@ -69,8 +83,7 @@ func (es *ExpressionService) ExecuteExpression(expressionId string, urlParams st
 		Values:     urlParams,
 		Result:     result.(bool),
 	}
-
-	fmt.Println(response)
+	logger.WithField("result", result).Info("expression evaluated successfully")
 
 	return response, nil
 }
