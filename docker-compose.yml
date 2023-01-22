@@ -1,0 +1,13 @@
+version: "3"
+services:
+  bepay-database:
+    image: postgres:9.6
+    container_name: "postgres"
+    environment:
+    - POSTGRES_DB=postgres
+    - POSTGRES_USER=pg
+    - POSTGRES_PASSWORD=pass
+    volumes:
+    - "./init.sql:/docker-entrypoint-initdb.d/init.sql"
+    ports:
+    - 5432:5432
