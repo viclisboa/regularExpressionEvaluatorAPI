@@ -19,7 +19,7 @@ func main() {
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.InfoLevel)
 
-	repo, err := repository.NewRepository("postgres", `host=localhost user=pg password=pass dbname=postgres port=5432 sslmode=disable`)
+	repo, err := repository.NewRepository("postgres", `host=database user=pg password=pass dbname=postgres port=5432 sslmode=disable`)
 	if err != nil {
 		panic("error initializing database")
 	}
