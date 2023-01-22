@@ -13,6 +13,7 @@ type ExpressionInterface interface {
 	GetExpressionById(expressionId int) (model.Expression, error)
 	CreateExpression(definition string) error
 	SaveExpression(expressionId int, definition string) error
+	DeleteExpression(expressionId int) error
 }
 
 var _ ExpressionInterface = (*Repository)(nil)
@@ -80,6 +81,19 @@ func (r *Repository) SaveExpression(expressionId int, definition string) error {
 
 	if result.Error != nil {
 		fmt.Println("Failed to execute query", "err", result.Error)
+		return errors.New("failed to execute query")
+	}
+	return nil
+}
+
+func (r *Repository) DeleteExpression(expressionId int) error {
+	expression := model.Expression{
+		ID: expressionId,
+	}
+	result := r.db.Delete(&expression)
+
+	if result.Error != nil {
+		fmt.Println("Failed to execute delete query", "err", result.Error)
 		return errors.New("failed to execute query")
 	}
 	return nil

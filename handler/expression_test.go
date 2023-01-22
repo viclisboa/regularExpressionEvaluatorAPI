@@ -57,7 +57,7 @@ func TestSaveExpression(t *testing.T) {
 			handler := ExpressionHandler{
 				ExpressionService:    service.ExpressionService{},
 				ExpressionRepository: &tc.databaseMock,
-				Logger:               log.Entry{},
+				Logger:               log.Logger{},
 			}
 
 			r := chi.NewRouter()
@@ -119,7 +119,7 @@ func TestCreateExpression(t *testing.T) {
 			handler := ExpressionHandler{
 				ExpressionService:    service.ExpressionService{},
 				ExpressionRepository: &tc.databaseMock,
-				Logger:               log.Entry{},
+				Logger:               log.Logger{},
 			}
 
 			r := chi.NewRouter()
@@ -180,7 +180,7 @@ func TestEvaluateExpression(t *testing.T) {
 			handler := ExpressionHandler{
 				ExpressionService:    service.ExpressionService{},
 				ExpressionRepository: &tc.databaseMock,
-				Logger:               log.Entry{},
+				Logger:               log.Logger{},
 			}
 
 			r := chi.NewRouter()
@@ -198,6 +198,55 @@ func TestEvaluateExpression(t *testing.T) {
 
 			assert.Equal(t, tc.httpStatus, response.StatusCode)
 			assert.Equal(t, tc.expectedBody, parsedResponse)
+		})
+	}
+}
+
+func TestDeleteExpression(t *testing.T) {
+	testCases := []struct {
+		name         string
+		databaseMock repository.Stub
+		requestBody  map[string]any
+		httpStatus   int
+	}{
+		{
+			name: "should return 200",
+			databaseMock: repository.Stub{
+				DeleteExpressionError: nil,
+			},
+			httpStatus: http.StatusOK,
+		},
+		{
+			name: "should return 500, error deleting from database",
+			databaseMock: repository.Stub{
+				DeleteExpressionError: errors.New("not found"),
+			},
+			httpStatus: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			handler := ExpressionHandler{
+				ExpressionService:    service.ExpressionService{},
+				ExpressionRepository: &tc.databaseMock,
+				Logger:               log.Logger{},
+			}
+
+			r := chi.NewRouter()
+			r.HandleFunc("/expressions/{expressionId}", handler.DeleteExpression)
+			ts := httptest.NewServer(r)
+			defer ts.Close()
+
+			url := ts.URL + "/expressions/1"
+
+			var buf bytes.Buffer
+			_ = json.NewEncoder(&buf).Encode(tc.requestBody)
+
+			req, _ := http.NewRequest(http.MethodDelete, url, nil)
+			response, _ := http.DefaultClient.Do(req)
+
+			assert.Equal(t, tc.httpStatus, response.StatusCode)
 		})
 	}
 }

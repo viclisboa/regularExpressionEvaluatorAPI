@@ -14,7 +14,7 @@ import (
 type ExpressionHandler struct {
 	ExpressionService    service.ExpressionService
 	ExpressionRepository repository.ExpressionInterface
-	Logger               log.Entry
+	Logger               log.Logger
 }
 
 func (eh *ExpressionHandler) EvaluateExpression(w http.ResponseWriter, r *http.Request) {
@@ -147,6 +147,29 @@ func (eh *ExpressionHandler) GetAllExpressions(w http.ResponseWriter, r *http.Re
 	}
 
 	eh.Logger.Info("all expressions recovered successfully")
+}
+
+func (eh *ExpressionHandler) DeleteExpression(w http.ResponseWriter, r *http.Request) {
+	params := GetURLParams(r)
+	expressionId := params["expressionId"]
+
+	logger := eh.Logger.WithField("expressionId", expressionId)
+
+	expressionIdAsInt, err := strconv.Atoi(expressionId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logger.WithField("err", err.Error()).Error("error parsing expressionId to int")
+		return
+	}
+
+	err = eh.ExpressionRepository.DeleteExpression(expressionIdAsInt)
+	if err != nil {
+		logger.WithField("err", err.Error()).Error("Error deleting expression")
+		http.Error(w, "Error updating expression", http.StatusInternalServerError)
+		return
+	}
+
+	logger.Info("expression deleted successfully")
 }
 
 func GetURLParams(r *http.Request) map[string]string {

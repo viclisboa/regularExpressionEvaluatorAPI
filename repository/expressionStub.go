@@ -19,6 +19,9 @@ type Stub struct {
 	GetExpressionByIdResponse   model.Expression
 	GetExpressionByIdError      error
 	GetExpressionByIdCalledWith map[string]any
+
+	DeleteExpressionCalledWith map[string]any
+	DeleteExpressionError      error
 }
 
 func (s *Stub) GetAllExpressions() ([]model.Expression, error) {
@@ -46,4 +49,11 @@ func (s *Stub) SaveExpression(expressionId int, definition string) error {
 		"definition":   definition,
 	}
 	return s.SaveExpressionError
+}
+
+func (s *Stub) DeleteExpression(expressionId int) error {
+	s.DeleteExpressionCalledWith = map[string]any{
+		"expressionId": expressionId,
+	}
+	return s.DeleteExpressionError
 }

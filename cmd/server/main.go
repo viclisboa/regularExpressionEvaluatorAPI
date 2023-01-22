@@ -23,14 +23,11 @@ func main() {
 		panic("error initializing database")
 	}
 
-	logger := log.WithField("application", "regularExpressionEvaluator")
-
-	svc := service.ExpressionService{Logger: *logger}
+	svc := service.ExpressionService{}
 
 	expressionHandler := handler.ExpressionHandler{
 		ExpressionService:    svc,
 		ExpressionRepository: &repo,
-		Logger:               *logger,
 	}
 
 	r := chi.NewRouter()
@@ -38,6 +35,7 @@ func main() {
 	r.Get("/evaluate/{expressionId}", expressionHandler.EvaluateExpression)
 	r.Get("/expressions", expressionHandler.GetAllExpressions)
 	r.Post("/expressions/{expressionId}", expressionHandler.SaveExpression)
+	r.Delete("/expressions/{expressionId}", expressionHandler.SaveExpression)
 	r.Post("/expressions", expressionHandler.CreateExpression)
 
 	http.Handle("/", r)
