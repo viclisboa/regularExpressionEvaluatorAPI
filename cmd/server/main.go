@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	log "github.com/sirupsen/logrus"
 	"github.com/viclisboa/regularExpressionEvaluatorAPI/handler"
 	"github.com/viclisboa/regularExpressionEvaluatorAPI/repository"
@@ -30,8 +31,12 @@ func main() {
 		ExpressionRepository: &repo,
 	}
 
-	r := chi.NewRouter()
+	credentials := map[string]string{
+		"testeUser": "testePassword",
+	}
 
+	r := chi.NewRouter()
+	r.Use(middleware.BasicAuth("", credentials))
 	r.Get("/evaluate/{expressionId}", expressionHandler.EvaluateExpression)
 	r.Get("/expressions", expressionHandler.GetAllExpressions)
 	r.Post("/expressions/{expressionId}", expressionHandler.SaveExpression)
