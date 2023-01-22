@@ -5,7 +5,6 @@ import (
 	"github.com/Knetic/govaluate"
 	log "github.com/sirupsen/logrus"
 	"github.com/viclisboa/regularExpressionEvaluatorAPI/model"
-	"github.com/viclisboa/regularExpressionEvaluatorAPI/repository"
 	"github.com/viclisboa/regularExpressionEvaluatorAPI/util"
 	"regexp"
 	"strconv"
@@ -13,32 +12,11 @@ import (
 )
 
 type ExpressionService struct {
-	ExpressionRepository repository.ExpressionInterface
-	Logger               log.Logger
+	Logger log.Logger
 }
 
-func NewExpressionService(repo repository.Repository, balance int) ExpressionService {
-	return ExpressionService{
-		ExpressionRepository: &repo,
-	}
-}
-
-func (es *ExpressionService) ExecuteExpression(expressionId string, urlParams string) (model.Response, error) {
-	logger := es.Logger.WithField("expressionId", expressionId)
-
-	expressionIdAsInt, err := strconv.Atoi(expressionId)
-	if err != nil {
-		logger.Error("error parsing expressionId to int")
-		return model.Response{}, errors.New(util.ErrParsingExpressionId)
-	}
-
-	expression, err := es.ExpressionRepository.GetExpressionById(expressionIdAsInt)
-	if err != nil {
-		logger.WithField("err", err.Error())
-		logger.Error("error recovering expression from database")
-		return model.Response{}, errors.New(util.ErrRecoveringExpressionFromDatabase)
-	}
-
+func (es *ExpressionService) ExecuteExpression(expression model.Expression, urlParams string) (model.Response, error) {
+	logger := es.Logger.WithField("expressionId", expression.ID)
 	searchRegexOr := regexp.MustCompile("(?i)" + "or")
 	searchRegexAnd := regexp.MustCompile("(?i)" + "and")
 

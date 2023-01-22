@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/viclisboa/regularExpressionEvaluatorAPI/model"
-	"github.com/viclisboa/regularExpressionEvaluatorAPI/repository"
 	"github.com/viclisboa/regularExpressionEvaluatorAPI/util"
 	"testing"
 )
@@ -12,37 +11,17 @@ import (
 func TestExpression_ExecuteExpression(t *testing.T) {
 	testCases := []struct {
 		name           string
-		databaseMock   repository.Stub
+		expression     model.Expression
 		expectedResult model.Response
 		expectedError  error
 		urlParams      string
 		expressionId   string
 	}{
 		{
-			name:           "should return error, expressionId not a number",
-			databaseMock:   repository.Stub{},
-			expectedResult: model.Response{},
-			expectedError:  errors.New(util.ErrParsingExpressionId),
-			urlParams:      "",
-			expressionId:   "potato",
-		},
-		{
-			name: "should return error, error recovering from database",
-			databaseMock: repository.Stub{
-				GetExpressionByIdError: errors.New("error recovering from database"),
-			},
-			expectedResult: model.Response{},
-			expectedError:  errors.New(util.ErrRecoveringExpressionFromDatabase),
-			urlParams:      "",
-			expressionId:   "5",
-		},
-		{
 			name: "should return error, error creating expression ",
-			databaseMock: repository.Stub{
-				GetExpressionByIdResponse: model.Expression{
-					ID:         1,
-					Definition: "&",
-				},
+			expression: model.Expression{
+				ID:         1,
+				Definition: "&",
 			},
 			expectedResult: model.Response{},
 			expectedError:  errors.New(util.ErrCreatingEvaluableExpression),
@@ -51,11 +30,9 @@ func TestExpression_ExecuteExpression(t *testing.T) {
 		},
 		{
 			name: "should return error, error evaluating expression",
-			databaseMock: repository.Stub{
-				GetExpressionByIdResponse: model.Expression{
-					ID:         1,
-					Definition: "x OR y",
-				},
+			expression: model.Expression{
+				ID:         1,
+				Definition: "x OR y",
 			},
 			expectedResult: model.Response{},
 			expectedError:  errors.New(util.ErrEvaluatingExpression),
@@ -64,11 +41,9 @@ func TestExpression_ExecuteExpression(t *testing.T) {
 		},
 		{
 			name: "should return success, operators with capital letters",
-			databaseMock: repository.Stub{
-				GetExpressionByIdResponse: model.Expression{
-					ID:         1,
-					Definition: "x OR y",
-				},
+			expression: model.Expression{
+				ID:         1,
+				Definition: "x OR y",
 			},
 			expectedResult: model.Response{
 				Definition: "x OR y",
@@ -81,11 +56,9 @@ func TestExpression_ExecuteExpression(t *testing.T) {
 		},
 		{
 			name: "should return success, operators without capital letters",
-			databaseMock: repository.Stub{
-				GetExpressionByIdResponse: model.Expression{
-					ID:         1,
-					Definition: "x or y",
-				},
+			expression: model.Expression{
+				ID:         1,
+				Definition: "x or y",
 			},
 			expectedResult: model.Response{
 				Definition: "x or y",
@@ -100,11 +73,9 @@ func TestExpression_ExecuteExpression(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			service := ExpressionService{
-				ExpressionRepository: &tc.databaseMock,
-			}
+			service := ExpressionService{}
 
-			result, err := service.ExecuteExpression(tc.expressionId, tc.urlParams)
+			result, err := service.ExecuteExpression(tc.expression, tc.urlParams)
 			assert.Equal(t, tc.expectedResult, result, "values should be the same")
 
 			if err != nil {
