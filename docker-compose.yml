@@ -1,6 +1,6 @@
 version: "3"
 services:
-  bepay-database:
+  database:
     image: postgres:9.6
     container_name: "postgres"
     environment:
