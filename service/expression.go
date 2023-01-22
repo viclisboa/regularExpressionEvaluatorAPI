@@ -12,7 +12,7 @@ import (
 )
 
 type ExpressionService struct {
-	Logger log.Logger
+	Logger log.Entry
 }
 
 func (es *ExpressionService) ExecuteExpression(expression model.Expression, urlParams string) (model.Response, error) {

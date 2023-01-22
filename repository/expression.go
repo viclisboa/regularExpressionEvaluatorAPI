@@ -27,8 +27,6 @@ func NewRepository(database, connectionString string) (Repository, error) {
 		panic(err)
 	}
 
-	db.DropTableIfExists("expression")
-
 	return Repository{
 		db: db,
 	}, nil

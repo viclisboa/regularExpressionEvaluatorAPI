@@ -57,7 +57,7 @@ func TestSaveExpression(t *testing.T) {
 			handler := ExpressionHandler{
 				ExpressionService:    service.ExpressionService{},
 				ExpressionRepository: &tc.databaseMock,
-				Logger:               log.Logger{},
+				Logger:               log.Entry{},
 			}
 
 			r := chi.NewRouter()
@@ -119,7 +119,7 @@ func TestCreateExpression(t *testing.T) {
 			handler := ExpressionHandler{
 				ExpressionService:    service.ExpressionService{},
 				ExpressionRepository: &tc.databaseMock,
-				Logger:               log.Logger{},
+				Logger:               log.Entry{},
 			}
 
 			r := chi.NewRouter()
@@ -180,7 +180,7 @@ func TestEvaluateExpression(t *testing.T) {
 			handler := ExpressionHandler{
 				ExpressionService:    service.ExpressionService{},
 				ExpressionRepository: &tc.databaseMock,
-				Logger:               log.Logger{},
+				Logger:               log.Entry{},
 			}
 
 			r := chi.NewRouter()

@@ -14,7 +14,7 @@ import (
 type ExpressionHandler struct {
 	ExpressionService    service.ExpressionService
 	ExpressionRepository repository.ExpressionInterface
-	Logger               log.Logger
+	Logger               log.Entry
 }
 
 func (eh *ExpressionHandler) EvaluateExpression(w http.ResponseWriter, r *http.Request) {
@@ -130,6 +130,23 @@ func (eh *ExpressionHandler) CreateExpression(w http.ResponseWriter, r *http.Req
 	}
 
 	eh.Logger.Info("expression created successfully")
+}
+
+func (eh *ExpressionHandler) GetAllExpressions(w http.ResponseWriter, r *http.Request) {
+	expressions, err := eh.ExpressionRepository.GetAllExpressions()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		eh.Logger.WithField("err", err.Error()).Error("error recovering expression from database")
+		return
+	}
+
+	if err := json.NewEncoder(w).Encode(expressions); err != nil {
+		http.Error(w, "Error on marshal ", http.StatusInternalServerError)
+		eh.Logger.WithField("err", err.Error()).Error("error encoding response")
+		return
+	}
+
+	eh.Logger.Info("all expressions recovered successfully")
 }
 
 func GetURLParams(r *http.Request) map[string]string {
